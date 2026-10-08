@@ -1,23 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Murogi Trading Pro</title>
-<style>
-body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}
-.card{background:#151515;padding:25px;border-radius:15px;max-width:600px;margin:20px auto;border:1px solid #00ff8844}
-button{background:#00ff88;color:#000;padding:15px 25px;border:0;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;width:100%}
-</style>
-</head>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Murogi Pro</title>
+<style>body{background:#000;color:#fff;font-family:Arial;text-align:center;padding:30px}.card{background:#111;padding:30px;border-radius:15px;max-width:500px;margin:auto;border:1px solid #00ff8855}button{background:#00ff88;color:#000;padding:16px;border:0;border-radius:10px;width:100%;font-weight:bold;font-size:17px}</style></head>
 <body>
 <div class="card">
-<h1>🔥 MUROGI TRADING PRO</h1>
-<p>Affiliate Tagged: KA5MGSJVX3X7 ✅</p>
-<a href="https://t.deriv.link?t=KA5MGSJVX3X7">
-<button>LOGIN TO DERIV & START TRADING</button>
-</a>
-<p><small>45% Commission on all trades</small></p>
+<h1>MUROGI TRADING PRO</h1>
+<p id="status">Login to connect your Deriv account</p>
+<button id="btn" onclick="go()">LOGIN TO DERIV</button>
 </div>
-</body>
-</html>
+<script>
+const APP_ID = 75702;
+const AFF = "KA5MGSJVX3X7";
+const SITE = "https://murogi-hub.github.io/murogi-trading-pro/";
+function go(){ location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=EN&brand=deriv&affiliate_token=${AFF}`; }
+const p = new URLSearchParams(location.search);
+if(p.get('token1')){
+ localStorage.setItem('tok', p.get('token1'));
+ document.getElementById('status').innerHTML = "✅ Connected: " + p.get('acct1') + "<br>Balance loading...";
+ document.getElementById('btn').innerText = "DASHBOARD ACTIVE - Affiliate Tagged";
+ history.replaceState({},'',SITE);
+ const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id='+APP_ID);
+ ws.onopen=()=>ws.send(JSON.stringify({authorize: p.get('token1')}));
+ ws.onmessage=e=>{let d=JSON.parse(e.data); if(d.authorize) ws.send(JSON.stringify({balance:1})); if(d.balance) document.getElementById('status').innerHTML += `<br><br><b>Balance: $${d.balance.balance}</b>`; }
+}
+</script>
+</body></html>
