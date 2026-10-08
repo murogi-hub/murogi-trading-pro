@@ -5,23 +5,22 @@
 <body>
 <div class="card">
 <h1>MUROGI TRADING PRO</h1>
-<p id="status">Login to connect your Deriv account</p>
-<button id="btn" onclick="go()">LOGIN TO DERIV</button>
+<p id="status">Affiliate: KA5MGSJVX3X7<br>Click to login</p>
+<button onclick="login()">LOGIN & RETURN TO SITE</button>
 </div>
 <script>
-const APP_ID = 75702;
-const AFF = "KA5MGSJVX3X7";
-const SITE = "https://murogi-hub.github.io/murogi-trading-pro/";
-function go(){ location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=EN&brand=deriv&affiliate_token=${AFF}`; }
-const p = new URLSearchParams(location.search);
+function login(){
+ // Step 1: Tag affiliate cookie
+ window.open('https://t.deriv.link/?t=KA5MGSJVX3X7','_blank');
+ // Step 2: After 1 sec, go to OAuth that returns to your site
+ setTimeout(()=>{
+   location.href='https://oauth.deriv.com/oauth2/authorize?app_id=16929&l=EN&brand=deriv';
+ },1000);
+}
+const p=new URLSearchParams(location.search);
 if(p.get('token1')){
- localStorage.setItem('tok', p.get('token1'));
- document.getElementById('status').innerHTML = "✅ Connected: " + p.get('acct1') + "<br>Balance loading...";
- document.getElementById('btn').innerText = "DASHBOARD ACTIVE - Affiliate Tagged";
- history.replaceState({},'',SITE);
- const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id='+APP_ID);
- ws.onopen=()=>ws.send(JSON.stringify({authorize: p.get('token1')}));
- ws.onmessage=e=>{let d=JSON.parse(e.data); if(d.authorize) ws.send(JSON.stringify({balance:1})); if(d.balance) document.getElementById('status').innerHTML += `<br><br><b>Balance: $${d.balance.balance}</b>`; }
+ document.getElementById('status').innerHTML='✅ CONNECTED: '+p.get('acct1')+'<br>Affiliate tagged KA5MGSJVX3X7<br>Commission active!';
+ history.replaceState({},'', 'https://murogi-hub.github.io/murogi-trading-pro/');
 }
 </script>
 </body></html>
