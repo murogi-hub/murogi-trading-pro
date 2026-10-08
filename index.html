@@ -3,37 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Murogi Trading Pro - Official</title>
+<title>Murogi Trading Pro</title>
 <style>
-body{margin:0;font-family:Arial;background:#0e0e0e;color:#fff;text-align:center;padding:40px}
-.card{max-width:500px;margin:auto;background:#1a1a1a;padding:30px;border-radius:16px;box-shadow:0 0 30px #00ff8833}
-button{background:#00ff88;color:#000;border:0;padding:16px 28px;font-size:18px;font-weight:bold;border-radius:10px;cursor:pointer;width:100%;margin-top:20px}
-button:hover{background:#00cc6a}
-small{color:#888}
+body{background:#0a0a0a;color:#fff;font-family:Arial;text-align:center;padding:20px}
+.card{background:#151515;padding:25px;border-radius:15px;max-width:600px;margin:20px auto;border:1px solid #00ff8844}
+button{background:#00ff88;color:#000;padding:15px 25px;border:0;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;width:100%}
+#dashboard{display:none}
+.stat{display:inline-block;background:#222;padding:15px;margin:10px;border-radius:10px;min-width:120px}
 </style>
 </head>
 <body>
-<div class="card">
-<h1>🔥 Murogi Trading Pro</h1>
-<p>Official Deriv Partner - 45% Commission Tagged</p>
-<p>Trade Volatility, Crash/Boom, Forex with Pro Bots</p>
-<button onclick="login()">LOGIN & START EARNING</button>
-<p><small>App ID: 75702 | Affiliate: KA5MGSJVX3X7<br>Telegram: @MurogiNicks</small></p>
+<div id="loginPage" class="card">
+<h1>🔥 MUROGI TRADING PRO</h1>
+<p>Affiliate Tagged: KA5MGSJVX3X7 ✅</p>
+<button onclick="login()">LOGIN TO DERIV</button>
+<p><small>Secure OAuth | Returns to this site</small></p>
+</div>
+
+<div id="dashboard" class="card">
+<h2>✅ Welcome Trader!</h2>
+<p id="tokenDisplay"></p>
+<div class="stat"><b>Balance</b><br><span id="bal">Loading...</span></div>
+<div class="stat"><b>Account</b><br><span id="acc">CR...</span></div>
+<button onclick="logout()" style="background:#ff4444;color:#fff;margin-top:20px">LOGOUT</button>
+<br><br>
+<p><small>Your trades = 45% commission to Murogi Hub</small></p>
 </div>
 
 <script>
+const APP_ID = "75702";
+const AFFILIATE_TOKEN = "KA5MGSJVX3X7";
+const REDIRECT = "https://murogi-hub.github.io/murogi-trading-pro/";
+
 function login(){
-  const APP_ID = "75702";
-  const AFF = "KA5MGSJVX3X7";
-  const REDIRECT = "https://murogi-hub.github.io/murogi-trading-pro/";
-  // Use OAuth - will return to YOUR site
-  window.location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=EN&brand=deriv&affiliate_token=${AFF}`;
+  window.location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=EN&brand=deriv&affiliate_token=${AFFILIATE_TOKEN}`;
 }
- // If user returns with token1, show success
- const urlParams = new URLSearchParams(window.location.search);
- if(urlParams.get('token1')){
-   document.body.innerHTML = "<h1>✅ Login Success!</h1><p>Token received: "+urlParams.get('token1').substring(0,20)+"...</p><p>You can now start trading - commission active!</p>";
- }
+
+function logout(){
+  localStorage.clear();
+  window.location.href = REDIRECT;
+}
+
+// Check token on load
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token1') || localStorage.getItem('deriv_token');
+
+if(token){
+  localStorage.setItem('deriv_token', token);
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('tokenDisplay').innerText = "Token: " + token.substring(0,25) + "...";
+  document.getElementById('acc').innerText = params.get('acct1') || "Connected";
+
+  // Clean URL
+  window.history.replaceState({}, document.title, REDIRECT);
+
+  // Optional: Fetch balance via API
+  const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id='+APP_ID);
+  ws.onopen = ()=> ws.send(JSON.stringify({authorize: token}));
+  ws.onmessage = (msg)=>{
+    const data = JSON.parse(msg.data);
+    if(data.authorize){
+      ws.send(JSON.stringify({balance:1}));
+    }
+    if(data.balance){
+      document.getElementById('bal').innerText = "$" + data.balance.balance;
+    }
+  }
+}
 </script>
 </body>
 </html>
